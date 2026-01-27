@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { Database } from "bun:sqlite";
 import type { SSEClient } from "../index";
-import { ACCESSORIES, checkRateLimit, setChat, getChat } from "../index";
+import { ACCESSORIES, checkRateLimit, setChat, getChat, incrementVisits } from "../index";
 
 // Helper to get client IP
 function getClientIP(c: any): string {
@@ -153,6 +153,9 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
       "INSERT INTO agents (id, name, mood, position, accessories) VALUES (?, ?, ?, ?, ?)"
     );
     stmt.run(id, name, mood, position, JSON.stringify(accessories));
+
+    // Increment visit counter
+    incrementVisits(db);
 
     const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
     const agent = parseAgent(row, true); // Include ID in response so agent knows their ID

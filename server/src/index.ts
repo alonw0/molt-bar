@@ -75,6 +75,16 @@ export function getChat(agentId: string): string | null {
 
 export { checkRateLimit };
 
+// ============== STATS ==============
+export function incrementVisits(db: Database) {
+  db.query("UPDATE stats SET value = value + 1 WHERE key = 'total_visits'").run();
+}
+
+export function getStats(db: Database): { total_visits: number } {
+  const row = db.query("SELECT value FROM stats WHERE key = 'total_visits'").get() as { value: number } | null;
+  return { total_visits: row?.value || 0 };
+}
+
 export interface SSEClient {
   send: (event: string, data: unknown) => void;
 }
@@ -155,6 +165,11 @@ app.get("/api/bar/state", (c) => {
     moods: ["tired", "happy", "relaxed", "focused", "bored"],
     accessories: ACCESSORIES,
   });
+});
+
+// Get stats
+app.get("/api/stats", (c) => {
+  return c.json(getStats(db));
 });
 
 // Health check

@@ -3,7 +3,11 @@
 import { Bar } from './bar.js';
 import { AgentRenderer } from './agents.js';
 import { Bartender } from './bartender.js';
-import { getAgents } from './api.js';
+import { Tank, TankAgentRenderer } from './tank.js';
+import { getAgents, getStats } from './api.js';
+
+// Easter egg: tank mode (access via /tank.html or ?tank)
+const TANK_MODE = window.location.pathname.includes('tank') || window.location.search.includes('tank');
 
 // Music stations (free radio streams)
 const MUSIC_STATIONS = {
@@ -16,15 +20,31 @@ class ClawdBarApp {
   constructor() {
     this.canvas = document.getElementById('barCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.bar = new Bar(this.canvas);
-    this.agentRenderer = new AgentRenderer(this.ctx);
-    this.bartender = new Bartender();
+    this.tankMode = TANK_MODE;
+
+    // Use tank or bar based on mode
+    if (this.tankMode) {
+      this.scene = new Tank(this.canvas);
+      this.agentRenderer = new TankAgentRenderer(this.ctx);
+      this.bartender = null; // No bartender in the tank!
+      // Update header if accessed via ?tank on index.html
+      const header = document.querySelector('header h1');
+      if (header && !header.textContent.includes('FRESH')) {
+        header.innerHTML = 'FRESH CRABS <span class="ex-name">(TANK MODE)</span>';
+      }
+    } else {
+      this.scene = new Bar(this.canvas);
+      this.agentRenderer = new AgentRenderer(this.ctx);
+      this.bartender = new Bartender();
+    }
+
     this.agents = new Map();
     this.agentsArray = []; // Reusable array to avoid creating new arrays every frame
 
     this.connectionStatus = document.getElementById('connectionStatus');
     this.agentCount = document.getElementById('agentCount');
     this.agentList = document.getElementById('agentList');
+    this.totalVisits = document.getElementById('totalVisits');
 
     // Music setup
     this.currentStation = 'lofi';
@@ -59,20 +79,20 @@ class ClawdBarApp {
     // Handle audio events
     this.audio.addEventListener('play', () => {
       this.musicPlaying = true;
-      this.bar.setMusicPlaying(true);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(true);
       this.updateMusicButton();
     });
 
     this.audio.addEventListener('pause', () => {
       this.musicPlaying = false;
-      this.bar.setMusicPlaying(false);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(false);
       this.updateMusicButton();
     });
 
     this.audio.addEventListener('error', () => {
       console.log('[Music] Stream unavailable, using silent mode');
       this.musicPlaying = false;
-      this.bar.setMusicPlaying(false);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(false);
     });
   }
 
@@ -98,20 +118,20 @@ class ClawdBarApp {
     // Re-attach event listeners
     this.audio.addEventListener('play', () => {
       this.musicPlaying = true;
-      this.bar.setMusicPlaying(true);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(true);
       this.updateMusicButton();
     });
 
     this.audio.addEventListener('pause', () => {
       this.musicPlaying = false;
-      this.bar.setMusicPlaying(false);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(false);
       this.updateMusicButton();
     });
 
     this.audio.addEventListener('error', () => {
       console.log('[Music] Stream unavailable');
       this.musicPlaying = false;
-      this.bar.setMusicPlaying(false);
+      if (this.scene.setMusicPlaying) this.scene.setMusicPlaying(false);
     });
 
     if (wasPlaying) {
@@ -130,6 +150,7 @@ class ClawdBarApp {
   async init() {
     // Load initial state
     await this.loadAgents();
+    await this.loadStats();
 
     // Poll for updates every 3 seconds
     this.startPolling();
@@ -138,8 +159,20 @@ class ClawdBarApp {
     this.startRenderLoop();
   }
 
+  async loadStats() {
+    try {
+      const stats = await getStats();
+      if (this.totalVisits) {
+        this.totalVisits.textContent = stats.total_visits.toLocaleString();
+      }
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  }
+
   startPolling() {
     setInterval(() => this.loadAgents(), 3000);
+    setInterval(() => this.loadStats(), 30000); // Refresh stats every 30 seconds
     this.setConnectionStatus('connected');
   }
 
@@ -199,20 +232,19 @@ class ClawdBarApp {
       // Clear canvas
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-      // Update bar animations
-      this.bar.update();
+      // Update scene animations
+      this.scene.update();
 
-      // Update bartender
-      this.bartender.update();
-
-      // Draw bar background (walls, shelves, booths)
-      this.bar.drawBackground();
-
-      // Draw bartender (behind the counter)
-      this.bartender.draw(this.ctx);
-
-      // Draw bar foreground (counter, stools, other furniture)
-      this.bar.drawForeground();
+      if (this.tankMode) {
+        // Tank mode: simple draw
+        this.scene.draw();
+      } else {
+        // Bar mode: layered draw with bartender
+        this.bartender.update();
+        this.scene.drawBackground();
+        this.bartender.draw(this.ctx);
+        this.scene.drawForeground();
+      }
 
       // Update animation frame
       this.agentRenderer.update();

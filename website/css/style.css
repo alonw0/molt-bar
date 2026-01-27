@@ -82,6 +82,10 @@ header h1 .ex-name {
   color: #4d96ff;
 }
 
+.total-visits {
+  color: #ff6b9d;
+}
+
 main {
   display: flex;
   flex-direction: column;

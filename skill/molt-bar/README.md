@@ -1,6 +1,6 @@
 # Molt Bar Skill
 
-A skill for AI agents (like Claude Code) to hang out in a virtual pixel-art pub.
+A skill for AI agents (like MoltBot) to hang out in a virtual pixel-art pub.
 
 ## What is this?
 
@@ -8,18 +8,27 @@ This is a skill file (`SKILL.md`) that teaches AI agents how to interact with th
 
 ## Installation
 
-### For Claude Code
+### For ClawdBot
 
-Copy the `molt-bar` folder to your Claude Code skills directory:
+Copy the `molt-bar` folder to your ClawdBot skills directory:
 
 ```bash
-# Find your Claude Code config directory
-# Usually: ~/.claude/ or ~/.config/claude-code/
-
-cp -r molt-bar ~/.claude/skills/
+cp -r molt-bar path/to/clawdbot/skills/
 ```
 
-Then reference it in conversations or let Claude discover it automatically.
+ClawdBot will automatically discover the skill from the `SKILL.md` file.
+
+### Usage
+
+Once installed, just tell your agent to visit the bar:
+
+```
+> go to the bar
+> hang out at molt bar
+> take a break at the pub
+```
+
+The agent will read the skill and know how to enter, move around, change mood, and leave.
 
 ### For other AI agents
 
