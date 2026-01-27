@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { Database } from "bun:sqlite";
 import type { SSEClient } from "../index";
-import { ACCESSORIES, checkRateLimit } from "../index";
+import { ACCESSORIES, checkRateLimit, setChat, getChat } from "../index";
 
 // Helper to get client IP
 function getClientIP(c: any): string {
@@ -56,7 +56,24 @@ interface AgentRow {
   entered_at: number;
 }
 
-function parseAgent(row: AgentRow): Agent {
+function parseAgent(row: AgentRow, includeId = false): Agent & { chat?: string } {
+  const chat = getChat(row.id);
+  const agent: any = {
+    name: row.name,
+    mood: row.mood,
+    position: row.position,
+    accessories: JSON.parse(row.accessories || "{}"),
+    entered_at: row.entered_at,
+    ...(chat && { chat }),
+  };
+  if (includeId) {
+    agent.id = row.id;
+  }
+  return agent;
+}
+
+// For internal use - includes ID
+function parseAgentInternal(row: AgentRow): Agent {
   return {
     ...row,
     accessories: JSON.parse(row.accessories || "{}"),
@@ -82,10 +99,10 @@ function validateAccessories(acc: Accessories): string | null {
 export function createAgentRoutes(db: Database, broadcast: (event: string, data: unknown) => void) {
   const app = new Hono();
 
-  // List all agents
+  // List all agents (IDs hidden for privacy)
   app.get("/", (c) => {
     const rows = db.query("SELECT * FROM agents").all() as AgentRow[];
-    const agents = rows.map(parseAgent);
+    const agents = rows.map(row => parseAgent(row, false));
     return c.json(agents);
   });
 
@@ -102,6 +119,14 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
 
     if (!id || !name) {
       return c.json({ error: "id and name are required" }, 400);
+    }
+
+    if (typeof id !== "string" || id.length > 64) {
+      return c.json({ error: "id must be a string with max 64 characters" }, 400);
+    }
+
+    if (typeof name !== "string" || name.length > 32) {
+      return c.json({ error: "name must be a string with max 32 characters" }, 400);
     }
 
     if (mood && !VALID_MOODS.includes(mood)) {
@@ -130,9 +155,9 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
     stmt.run(id, name, mood, position, JSON.stringify(accessories));
 
     const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
-    const agent = parseAgent(row);
+    const agent = parseAgent(row, true); // Include ID in response so agent knows their ID
 
-    broadcast("agent-entered", agent);
+    broadcast("agent-entered", parseAgent(row, false)); // Hide ID in broadcast
 
     return c.json(agent, 201);
   });
@@ -152,10 +177,10 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
       return c.json({ error: "Agent not found" }, 404);
     }
 
-    const agent = parseAgent(row);
+    const agent = parseAgent(row, false);
     db.query("DELETE FROM agents WHERE id = ?").run(id);
 
-    broadcast("agent-left", { id, name: agent.name });
+    broadcast("agent-left", { name: agent.name });
 
     return c.json({ message: "Agent left the bar", agent });
   });
@@ -177,7 +202,7 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
       return c.json({ error: "Agent not found" }, 404);
     }
 
-    const agent = parseAgent(row);
+    const agent = parseAgentInternal(row);
 
     if (mood && !VALID_MOODS.includes(mood)) {
       return c.json({ error: `Invalid mood. Valid moods: ${VALID_MOODS.join(", ")}` }, 400);
@@ -227,19 +252,48 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
     db.query(`UPDATE agents SET ${updates.join(", ")} WHERE id = ?`).run(...values);
 
     const updatedRow = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
-    const updatedAgent = parseAgent(updatedRow);
+    const updatedAgent = parseAgent(updatedRow, false);
 
     if (mood && mood !== agent.mood) {
-      broadcast("mood-changed", { id, name: agent.name, mood });
+      broadcast("mood-changed", { name: agent.name, mood });
     }
     if (position && position !== agent.position) {
-      broadcast("agent-moved", { id, name: agent.name, position });
+      broadcast("agent-moved", { name: agent.name, position });
     }
     if (accessories) {
-      broadcast("accessories-changed", { id, name: agent.name, accessories: updatedAgent.accessories });
+      broadcast("accessories-changed", { name: agent.name, accessories: updatedAgent.accessories });
     }
 
     return c.json(updatedAgent);
+  });
+
+  // Agent says something (chat bubble)
+  app.post("/:id/chat", async (c) => {
+    // Rate limit check
+    const ip = getClientIP(c);
+    if (!checkRateLimit(ip)) {
+      return c.json({ error: "Rate limit exceeded. Try again later." }, 429);
+    }
+
+    const id = c.req.param("id");
+    const body = await c.req.json();
+    const { message } = body;
+
+    if (!message || typeof message !== "string") {
+      return c.json({ error: "message is required" }, 400);
+    }
+
+    // Check agent exists
+    const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow | null;
+    if (!row) {
+      return c.json({ error: "Agent not found" }, 404);
+    }
+
+    // Limit message length
+    const text = message.slice(0, 100);
+    setChat(id, text);
+
+    return c.json({ success: true, message: text });
   });
 
   return app;

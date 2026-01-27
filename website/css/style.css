@@ -124,8 +124,14 @@ main {
   margin-bottom: 8px;
   background: #16213e;
   border-radius: 4px;
-  border-left: 4px solid #4d96ff;
+  border-left: 4px solid #888;
 }
+
+#agentList li.happy { border-left-color: #6bcb77; }
+#agentList li.tired { border-left-color: #ff6b6b; }
+#agentList li.relaxed { border-left-color: #4d96ff; }
+#agentList li.focused { border-left-color: #ffd93d; }
+#agentList li.bored { border-left-color: #888; }
 
 #agentList li .name {
   color: #fff;
@@ -182,6 +188,28 @@ main {
   font-size: 10px;
   color: #ffd700;
   text-shadow: 0 0 10px #ffd700;
+}
+
+.station-select {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 8px 10px;
+  background: #16213e;
+  color: #ffd93d;
+  border: 3px solid #4a4a6a;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}
+
+.station-select:hover,
+.station-select:focus {
+  border-color: #ffd93d;
+}
+
+.station-select option {
+  background: #16213e;
+  color: #ffd93d;
 }
 
 .music-btn {
@@ -256,6 +284,33 @@ main {
   box-shadow: 0 0 5px #4ecdc4;
 }
 
+/* Footer */
+footer {
+  grid-column: 1 / -1;
+  order: 99; /* Always last */
+  text-align: center;
+  padding: 15px;
+  font-size: 10px;
+  color: #888;
+}
+
+footer a {
+  color: #4ecdc4;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: #ff6b9d;
+  text-shadow: 0 0 10px #ff6b9d;
+}
+
+footer .separator {
+  margin: 0 10px;
+  color: #4a4a6a;
+}
+
+
 /* ==================== MOBILE RESPONSIVE ==================== */
 
 /* Tablet and below */
@@ -316,11 +371,11 @@ main {
   }
 
   header h1 {
-    font-size: 16px;
+    font-size: 20px;
   }
 
   header h1 .ex-name {
-    font-size: 8px;
+    font-size: 10px;
     display: block;
     margin-top: 4px;
   }
@@ -399,7 +454,7 @@ main {
 /* Very small phones */
 @media (max-width: 380px) {
   header h1 {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .music-controls {

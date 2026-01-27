@@ -2,7 +2,7 @@
 
 // Position coordinates for each location in the bar
 export const POSITIONS = {
-  'entrance': { x: 100, y: 500 },
+  'entrance': { x: 160, y: 540 },
   'counter-1': { x: 200, y: 280 },
   'counter-2': { x: 280, y: 280 },
   'counter-3': { x: 360, y: 280 },
@@ -13,9 +13,9 @@ export const POSITIONS = {
   'booth-2': { x: 200, y: 150 },
   'booth-3': { x: 650, y: 150 },
   'booth-4': { x: 700, y: 250 },
-  'jukebox': { x: 700, y: 450 },
+  'jukebox': { x: 640, y: 510 },
   'pool-table': { x: 400, y: 450 },
-  'arcade': { x: 550, y: 500 },
+  'arcade': { x: 510, y: 550 },
 };
 
 export class Bar {

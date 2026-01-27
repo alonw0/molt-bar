@@ -40,7 +40,7 @@ export class AgentRenderer {
 
     // Idle animation - slight bob (seamless loop: frequency must complete full cycles in 120 frames)
     // Using 2π/120, 4π/120, 6π/120 for 1, 2, 3 complete cycles respectively
-    const phase = agent.id.charCodeAt(0) * 0.5; // Phase offset per agent
+    const phase = agent.name.charCodeAt(0) * 0.5; // Phase offset per agent
     const bobOffset = Math.sin(this.animationFrame * (Math.PI / 60) + phase) * 3;        // 1 cycle
     const antennaWiggle = Math.sin(this.animationFrame * (Math.PI / 20) + phase) * 5;    // 3 cycles
     const clawWiggle = Math.sin(this.animationFrame * (Math.PI / 30) + phase) * 2;       // 2 cycles
@@ -162,7 +162,85 @@ export class AgentRenderer {
     ctx.fill();
     ctx.shadowBlur = 0;
 
+    // Chat bubble
+    if (agent.chat) {
+      this.drawChatBubble(ctx, x, tagY - 10, agent.chat);
+    }
+
     ctx.textAlign = 'left';
+  }
+
+  drawChatBubble(ctx, x, y, text) {
+    ctx.font = '7px "Press Start 2P"';
+
+    // Word wrap for long messages
+    const maxWidth = 120;
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+
+    // Limit to 3 lines
+    if (lines.length > 3) {
+      lines.length = 3;
+      lines[2] = lines[2].slice(0, -3) + '...';
+    }
+
+    const lineHeight = 12;
+    const padding = 8;
+    const bubbleHeight = lines.length * lineHeight + padding * 2;
+    const bubbleWidth = Math.min(maxWidth + padding * 2, 140);
+    const bubbleX = x - bubbleWidth / 2;
+    const bubbleY = y - bubbleHeight - 10;
+
+    // Bubble background
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 8);
+    ctx.fill();
+
+    // Bubble border
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Bubble tail
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(x - 6, bubbleY + bubbleHeight);
+    ctx.lineTo(x, bubbleY + bubbleHeight + 8);
+    ctx.lineTo(x + 6, bubbleY + bubbleHeight);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - 6, bubbleY + bubbleHeight);
+    ctx.lineTo(x, bubbleY + bubbleHeight + 8);
+    ctx.lineTo(x + 6, bubbleY + bubbleHeight);
+    ctx.stroke();
+
+    // Cover tail connection
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(x - 5, bubbleY + bubbleHeight - 2, 10, 4);
+
+    // Text
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'center';
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], x, bubbleY + padding + 8 + i * lineHeight);
+    }
   }
 
   drawHat(ctx, x, y, hat, antennaWiggle) {

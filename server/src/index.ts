@@ -39,6 +39,40 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
+// ============== CHAT MESSAGES ==============
+const CHAT_TTL = 10 * 1000; // Messages disappear after 10 seconds
+
+interface ChatMessage {
+  text: string;
+  timestamp: number;
+}
+
+const chatMessages = new Map<string, ChatMessage>(); // agentId -> message
+
+// Clean up expired messages every second
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, msg] of chatMessages) {
+    if (now - msg.timestamp > CHAT_TTL) {
+      chatMessages.delete(id);
+    }
+  }
+}, 1000);
+
+export function setChat(agentId: string, text: string) {
+  chatMessages.set(agentId, { text, timestamp: Date.now() });
+}
+
+export function getChat(agentId: string): string | null {
+  const msg = chatMessages.get(agentId);
+  if (!msg) return null;
+  if (Date.now() - msg.timestamp > CHAT_TTL) {
+    chatMessages.delete(agentId);
+    return null;
+  }
+  return msg.text;
+}
+
 export { checkRateLimit };
 
 export interface SSEClient {
@@ -69,6 +103,7 @@ export const ACCESSORIES = {
 };
 
 // SSE clients
+const MAX_SSE_CLIENTS = 200;
 const clients = new Set<SSEClient>();
 
 // Broadcast to all connected clients
@@ -136,6 +171,20 @@ console.log(`   Website: http://localhost:${PORT}/index.html`);
 
 // Handle SSE with async pull that keeps connection open
 function handleSSE(signal?: AbortSignal): Response {
+  // Check if pub is full
+  if (clients.size >= MAX_SSE_CLIENTS) {
+    return new Response(
+      JSON.stringify({ error: "The pub is full! Try again later." }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+        },
+      }
+    );
+  }
+
   const encoder = new TextEncoder();
   const pendingMessages: Uint8Array[] = [];
   let resolveNext: ((done: boolean) => void) | null = null;

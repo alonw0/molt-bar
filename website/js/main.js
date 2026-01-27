@@ -5,8 +5,12 @@ import { AgentRenderer } from './agents.js';
 import { Bartender } from './bartender.js';
 import { getAgents } from './api.js';
 
-// Lo-fi music stream URL (royalty-free)
-const MUSIC_URL = 'https://streams.ilovemusic.de/iloveradio17.mp3';
+// Music stations (free radio streams)
+const MUSIC_STATIONS = {
+  lofi: 'https://streams.ilovemusic.de/iloveradio17.mp3',
+  chillhop: 'https://streams.ilovemusic.de/iloveradio2.mp3',
+  jazz: 'https://ice1.somafm.com/groovesalad-128-mp3',
+};
 
 class ClawdBarApp {
   constructor() {
@@ -23,8 +27,8 @@ class ClawdBarApp {
     this.agentList = document.getElementById('agentList');
 
     // Music setup
-    this.audio = new Audio(MUSIC_URL);
-    this.audio.loop = true;
+    this.currentStation = 'lofi';
+    this.audio = new Audio(MUSIC_STATIONS[this.currentStation]);
     this.audio.volume = 0.3;
     this.musicPlaying = false;
 
@@ -34,6 +38,7 @@ class ClawdBarApp {
   setupMusicControls() {
     const musicBtn = document.getElementById('musicBtn');
     const volumeSlider = document.getElementById('volumeSlider');
+    const stationSelect = document.getElementById('stationSelect');
 
     if (musicBtn) {
       musicBtn.addEventListener('click', () => this.toggleMusic());
@@ -42,6 +47,12 @@ class ClawdBarApp {
     if (volumeSlider) {
       volumeSlider.addEventListener('input', (e) => {
         this.audio.volume = e.target.value / 100;
+      });
+    }
+
+    if (stationSelect) {
+      stationSelect.addEventListener('change', (e) => {
+        this.changeStation(e.target.value);
       });
     }
 
@@ -75,6 +86,39 @@ class ClawdBarApp {
     }
   }
 
+  changeStation(station) {
+    const wasPlaying = this.musicPlaying;
+    const currentVolume = this.audio.volume;
+
+    this.audio.pause();
+    this.currentStation = station;
+    this.audio = new Audio(MUSIC_STATIONS[station]);
+    this.audio.volume = currentVolume;
+
+    // Re-attach event listeners
+    this.audio.addEventListener('play', () => {
+      this.musicPlaying = true;
+      this.bar.setMusicPlaying(true);
+      this.updateMusicButton();
+    });
+
+    this.audio.addEventListener('pause', () => {
+      this.musicPlaying = false;
+      this.bar.setMusicPlaying(false);
+      this.updateMusicButton();
+    });
+
+    this.audio.addEventListener('error', () => {
+      console.log('[Music] Stream unavailable');
+      this.musicPlaying = false;
+      this.bar.setMusicPlaying(false);
+    });
+
+    if (wasPlaying) {
+      this.audio.play().catch(() => {});
+    }
+  }
+
   updateMusicButton() {
     const musicBtn = document.getElementById('musicBtn');
     if (musicBtn) {
@@ -104,7 +148,7 @@ class ClawdBarApp {
       const agents = await getAgents();
       this.agents.clear();
       for (const agent of agents) {
-        this.agents.set(agent.id, agent);
+        this.agents.set(agent.name, agent);
       }
       this.updateAgentList();
     } catch (error) {
@@ -123,6 +167,7 @@ class ClawdBarApp {
     this.agentList.innerHTML = '';
     for (const agent of this.agents.values()) {
       const li = document.createElement('li');
+      li.className = agent.mood;
       li.innerHTML = `
         <span class="name">${this.escapeHtml(agent.name)}</span>
         <span class="details">
