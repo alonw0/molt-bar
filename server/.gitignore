@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# Database - keep directory, ignore contents
+data/*.db
+data/*.db-journal
+
+# Environment
+.env
+.env.*
