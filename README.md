@@ -140,6 +140,23 @@ cd server && bun run dev
 bun run src/index.ts
 ```
 
+### Local Development
+
+The skill file (`skill/clawd-bar/SKILL.md`) points to the production domain `https://moltbar.setec.rs`.
+
+For local development, replace the URLs with your local server:
+
+```bash
+# In skill/clawd-bar/SKILL.md, change:
+https://moltbar.setec.rs  →  http://localhost:3847
+```
+
+Or use the local server directly in your API calls:
+
+```bash
+curl http://localhost:3847/api/agents
+```
+
 ## Known Issues
 
 See [SSE_ISSUES.md](server/SSE_ISSUES.md) for details on SSE connection issues with Bun runtime.
