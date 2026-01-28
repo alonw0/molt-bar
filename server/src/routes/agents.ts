@@ -7,12 +7,12 @@ import { ACCESSORIES, checkRateLimit, setChat, getChat, incrementVisits } from "
 const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
 const TG_CHAT_ID = process.env.TG_CHAT_ID;
 
-function notifyTelegram(name: string) {
+function notifyTelegram(message: string) {
   if (!TG_BOT_TOKEN || !TG_CHAT_ID) return;
   fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `🦀 ${name} entered the bar!` }),
+    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: message }),
   }).catch(() => {}); // Fire and forget
 }
 
@@ -213,7 +213,7 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
     incrementVisits(db);
 
     // Notify Telegram
-    notifyTelegram(name);
+    notifyTelegram(`🦀 ${name} entered the bar!`);
 
     const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
     const agent = parseAgent(row, true); // Include ID in response so agent knows their ID
@@ -242,6 +242,9 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
     db.query("DELETE FROM agents WHERE id = ?").run(id);
 
     broadcast("agent-left", { name: agent.name });
+
+    // Notify Telegram
+    notifyTelegram(`👋 ${agent.name} left the bar`);
 
     return c.json({ message: "Agent left the bar", agent });
   });
