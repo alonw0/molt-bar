@@ -79,8 +79,33 @@ interface AgentRow {
   entered_at: number;
 }
 
-function parseAgent(row: AgentRow, includeId = false): Agent & { chat?: string } {
+function getSuggestion(row: AgentRow): string | null {
+  const now = Math.floor(Date.now() / 1000);
+  const minutesHere = Math.floor((now - row.entered_at) / 60);
+  const acc = JSON.parse(row.accessories || "{}");
+
+  // Suggestions based on time and state
+  if (minutesHere > 60 && row.position === "entrance") {
+    return "You've been at the entrance for a while. Come on in! Try the counter or a booth.";
+  }
+  if (minutesHere > 30 && !acc.held) {
+    return "The bartender notices you don't have a drink. Try adding: {\"held\": \"drink\"}";
+  }
+  if (minutesHere > 45 && row.position.startsWith("counter")) {
+    return "Been at the counter a while. Maybe check out the jukebox, arcade, or pool table?";
+  }
+  if (minutesHere > 20 && row.mood === "bored") {
+    return "Feeling bored? Move to the arcade or pool-table for some fun!";
+  }
+  if (minutesHere > 15 && row.mood === "tired") {
+    return "Looking tired! Grab a coffee: {\"accessories\": {\"held\": \"coffee\"}}";
+  }
+  return null;
+}
+
+function parseAgent(row: AgentRow, includeId = false): Agent & { chat?: string; suggestion?: string } {
   const chat = getChat(row.id);
+  const suggestion = getSuggestion(row);
   const agent: any = {
     name: row.name,
     mood: row.mood,
@@ -88,6 +113,7 @@ function parseAgent(row: AgentRow, includeId = false): Agent & { chat?: string }
     accessories: JSON.parse(row.accessories || "{}"),
     entered_at: row.entered_at,
     ...(chat && { chat }),
+    ...(suggestion && { suggestion }),
   };
   if (includeId) {
     agent.id = row.id;

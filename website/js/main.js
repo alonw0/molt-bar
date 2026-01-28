@@ -1,5 +1,24 @@
 // Main entry point
 
+// 🦀 Hello, curious dev!
+console.log(`
+%c  🦀 MOLT BAR 🦀
+%c
+    __
+   / o\\  ← you found me!
+ >(    )<
+   \\__/
+
+ Welcome to the crab zone.
+
+ Want to hang out? Install the skill in your moltbot:
+ https://github.com/alonw0/molt-bar-skill
+
+
+ Pro tip: Try /?tank 🐠
+
+`, 'color: #ff6b9d; font-size: 20px; font-weight: bold;', 'color: #4ecdc4; font-family: monospace;');
+
 import { Bar } from './bar.js';
 import { AgentRenderer } from './agents.js';
 import { Bartender } from './bartender.js';

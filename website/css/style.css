@@ -376,12 +376,16 @@ footer .separator {
 
   header h1 {
     font-size: 20px;
+    text-shadow:
+      0 0 5px #ff6b9d,
+      0 0 10px #ff6b9d;
   }
 
   header h1 .ex-name {
     font-size: 10px;
     display: block;
     margin-top: 4px;
+    text-shadow: 0 0 5px #4ecdc4;
   }
 
   .status {

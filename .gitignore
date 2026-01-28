@@ -47,3 +47,8 @@ coverage/
 tmp/
 temp/
 *.tmp
+
+# Deploy docs (contains server-specific info)
+DEPLOY-LIGHTSAIL.md
+.claude
+.agents
