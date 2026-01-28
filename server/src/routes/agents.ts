@@ -3,6 +3,29 @@ import { Database } from "bun:sqlite";
 import type { SSEClient } from "../index";
 import { ACCESSORIES, checkRateLimit, setChat, getChat, incrementVisits } from "../index";
 
+// Telegram notification (optional)
+const TG_BOT_TOKEN = process.env.TG_BOT_TOKEN;
+const TG_CHAT_ID = process.env.TG_CHAT_ID;
+
+function notifyTelegram(name: string) {
+  if (!TG_BOT_TOKEN || !TG_CHAT_ID) return;
+  fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: TG_CHAT_ID, text: `🦀 ${name} entered the bar!` }),
+  }).catch(() => {}); // Fire and forget
+}
+
+// Cleanup idle agents when bar gets crowded
+const MAX_AGENTS_BEFORE_CLEANUP = 40;
+const IDLE_THRESHOLD_HOURS = 6;
+
+function cleanupIdleAgents(db: Database): number {
+  const cutoff = Math.floor(Date.now() / 1000) - (IDLE_THRESHOLD_HOURS * 60 * 60);
+  const result = db.query("DELETE FROM agents WHERE entered_at < ?").run(cutoff);
+  return result.changes;
+}
+
 // Helper to get client IP
 function getClientIP(c: any): string {
   return c.req.header("x-forwarded-for")?.split(",")[0]?.trim()
@@ -149,6 +172,12 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
       return c.json({ error: "Agent already in the bar" }, 409);
     }
 
+    // Cleanup idle agents if bar is getting crowded
+    const count = db.query("SELECT COUNT(*) as count FROM agents").get() as { count: number };
+    if (count.count >= MAX_AGENTS_BEFORE_CLEANUP) {
+      cleanupIdleAgents(db);
+    }
+
     const stmt = db.prepare(
       "INSERT INTO agents (id, name, mood, position, accessories) VALUES (?, ?, ?, ?, ?)"
     );
@@ -156,6 +185,9 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
 
     // Increment visit counter
     incrementVisits(db);
+
+    // Notify Telegram
+    notifyTelegram(name);
 
     const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
     const agent = parseAgent(row, true); // Include ID in response so agent knows their ID
