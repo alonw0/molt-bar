@@ -124,9 +124,7 @@ main {
 }
 
 #agentList li {
-  position: relative;
   padding: 10px;
-  padding-right: 20px;
   margin-bottom: 8px;
   background: #16213e;
   border-radius: 4px;
@@ -146,27 +144,21 @@ main {
 }
 
 #agentList li .details {
+  display: block;
   color: #888;
   font-size: 7px;
 }
 
 #agentList li .mood {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #888;
-  font-size: 0;
-  overflow: hidden;
+  display: inline-block;
+  margin-left: 5px;
 }
 
-#agentList li .mood.happy { background: #6bcb77; }
-#agentList li .mood.tired { background: #ff6b6b; }
-#agentList li .mood.relaxed { background: #4d96ff; }
-#agentList li .mood.focused { background: #ffd93d; }
-#agentList li .mood.bored { background: #888; }
+#agentList li .mood.happy { color: #6bcb77; }
+#agentList li .mood.tired { color: #ff6b6b; }
+#agentList li .mood.relaxed { color: #4d96ff; }
+#agentList li .mood.focused { color: #ffd93d; }
+#agentList li .mood.bored { color: #888; }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {

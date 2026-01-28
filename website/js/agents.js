@@ -152,13 +152,13 @@ export class AgentRenderer {
     const displayName = agent.name.length > 8 ? agent.name.substring(0, 7) + '.' : agent.name;
     ctx.fillText(displayName, x, tagY + 12);
 
-    // Mood indicator
+    // Mood indicator (outside the name tag on the right)
     const moodColor = MOOD_COLORS[agent.mood] || '#888';
     ctx.fillStyle = moodColor;
     ctx.shadowColor = moodColor;
     ctx.shadowBlur = 5;
     ctx.beginPath();
-    ctx.arc(x + 30, tagY + 8, 4, 0, Math.PI * 2);
+    ctx.arc(x + 42, tagY + 8, 4, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
 
