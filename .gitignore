@@ -50,5 +50,8 @@ temp/
 
 # Deploy docs (contains server-specific info)
 DEPLOY-LIGHTSAIL.md
+
+# Video project (Remotion)
+video/
 .claude
 .agents

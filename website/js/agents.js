@@ -367,6 +367,97 @@ export class AgentRenderer {
         ctx.ellipse(x + 24, y - 25, 8, 12, 0, 0, Math.PI * 2);
         ctx.fill();
         break;
+
+      case 'wizard':
+        // Wizard hat - purple with stars
+        ctx.fillStyle = '#6b3fa0';
+        ctx.beginPath();
+        ctx.moveTo(x, y - 70);
+        ctx.lineTo(x - 20, y - 25);
+        ctx.lineTo(x + 20, y - 25);
+        ctx.closePath();
+        ctx.fill();
+        // Brim
+        ctx.fillStyle = '#5a2d82';
+        ctx.beginPath();
+        ctx.ellipse(x, y - 25, 25, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Stars
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(x - 5, y - 45, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x + 8, y - 55, 2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case 'pirate':
+        // Tricorn pirate hat
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.ellipse(x, y - 28, 25, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x - 25, y - 30);
+        ctx.quadraticCurveTo(x - 15, y - 50, x, y - 40);
+        ctx.quadraticCurveTo(x + 15, y - 50, x + 25, y - 30);
+        ctx.fill();
+        // Skull
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(x, y - 35, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(x - 2, y - 36, 1.5, 0, Math.PI * 2);
+        ctx.arc(x + 2, y - 36, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case 'santa':
+        // Santa hat - red with white trim
+        ctx.fillStyle = '#c41e3a';
+        ctx.beginPath();
+        ctx.moveTo(x + 25, y - 55);
+        ctx.quadraticCurveTo(x, y - 60, x - 20, y - 25);
+        ctx.lineTo(x + 20, y - 25);
+        ctx.closePath();
+        ctx.fill();
+        // White trim
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x - 22, y - 30, 44, 10);
+        // Pom pom
+        ctx.beginPath();
+        ctx.arc(x + 25, y - 55, 8, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case 'hardhat':
+        // Construction hard hat - yellow
+        ctx.fillStyle = '#f4d03f';
+        ctx.beginPath();
+        ctx.arc(x, y - 30, 22, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(x - 25, y - 32, 50, 8);
+        // Brim
+        ctx.fillStyle = '#d4ac0d';
+        ctx.fillRect(x - 25, y - 26, 50, 4);
+        break;
+
+      case 'cap':
+        // Baseball cap
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(x, y - 25, 20, Math.PI, 0);
+        ctx.fill();
+        ctx.fillRect(x - 20, y - 27, 40, 6);
+        // Bill
+        ctx.fillStyle = '#c0392b';
+        ctx.beginPath();
+        ctx.ellipse(x + 18, y - 22, 15, 6, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        break;
     }
   }
 
@@ -450,6 +541,76 @@ export class AgentRenderer {
         ctx.moveTo(x + 22, y - 6);
         ctx.lineTo(x + 30, y - 8);
         ctx.stroke();
+        break;
+
+      case '3d':
+        // 3D glasses - red/cyan
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(x - 18, y - 12, 15, 10);
+        ctx.fillStyle = '#00bcd4';
+        ctx.fillRect(x + 3, y - 12, 15, 10);
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(x - 3, y - 10, 6, 3);
+        ctx.strokeStyle = '#1a1a1a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y - 8);
+        ctx.lineTo(x - 28, y - 12);
+        ctx.moveTo(x + 18, y - 8);
+        ctx.lineTo(x + 28, y - 12);
+        ctx.stroke();
+        break;
+
+      case 'heart':
+        // Heart-shaped glasses
+        ctx.fillStyle = '#ff6b9d';
+        // Left heart
+        ctx.beginPath();
+        ctx.moveTo(x - 10, y - 5);
+        ctx.bezierCurveTo(x - 10, y - 12, x - 20, y - 12, x - 20, y - 5);
+        ctx.bezierCurveTo(x - 20, y + 2, x - 10, y + 5, x - 10, y + 5);
+        ctx.bezierCurveTo(x - 10, y + 5, x, y + 2, x, y - 5);
+        ctx.bezierCurveTo(x, y - 12, x - 10, y - 12, x - 10, y - 5);
+        ctx.fill();
+        // Right heart
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y - 5);
+        ctx.bezierCurveTo(x + 10, y - 12, x, y - 12, x, y - 5);
+        ctx.bezierCurveTo(x, y + 2, x + 10, y + 5, x + 10, y + 5);
+        ctx.bezierCurveTo(x + 10, y + 5, x + 20, y + 2, x + 20, y - 5);
+        ctx.bezierCurveTo(x + 20, y - 12, x + 10, y - 12, x + 10, y - 5);
+        ctx.fill();
+        // Arms
+        ctx.strokeStyle = '#ff6b9d';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y - 8);
+        ctx.lineTo(x - 28, y - 10);
+        ctx.moveTo(x + 18, y - 8);
+        ctx.lineTo(x + 28, y - 10);
+        ctx.stroke();
+        break;
+
+      case 'thug':
+        // Thug life pixelated sunglasses
+        ctx.fillStyle = '#1a1a1a';
+        // Pixelated left lens
+        for (let py = 0; py < 3; py++) {
+          for (let px = 0; px < 4; px++) {
+            ctx.fillRect(x - 20 + px * 5, y - 14 + py * 4, 4, 3);
+          }
+        }
+        // Pixelated right lens
+        for (let py = 0; py < 3; py++) {
+          for (let px = 0; px < 4; px++) {
+            ctx.fillRect(x + 2 + px * 5, y - 14 + py * 4, 4, 3);
+          }
+        }
+        // Bridge
+        ctx.fillRect(x - 2, y - 10, 4, 3);
+        // Arms
+        ctx.fillRect(x - 22, y - 10, 4, 3);
+        ctx.fillRect(x + 20, y - 10, 4, 3);
         break;
     }
   }
@@ -540,6 +701,79 @@ export class AgentRenderer {
         ctx.fillText('HI!', x + 1, y - 12);
         ctx.textAlign = 'left';
         break;
+
+      case 'laptop':
+        // Laptop - still working at the bar
+        ctx.fillStyle = '#333';
+        ctx.fillRect(x - 12, y - 20, 28, 18);
+        ctx.fillStyle = '#4d96ff';
+        ctx.shadowColor = '#4d96ff';
+        ctx.shadowBlur = 3;
+        ctx.fillRect(x - 10, y - 18, 24, 14);
+        ctx.shadowBlur = 0;
+        // Keyboard base
+        ctx.fillStyle = '#444';
+        ctx.fillRect(x - 14, y - 2, 32, 8);
+        // Code on screen
+        ctx.fillStyle = '#4ecdc4';
+        ctx.fillRect(x - 8, y - 16, 12, 2);
+        ctx.fillRect(x - 8, y - 12, 8, 2);
+        ctx.fillRect(x - 8, y - 8, 16, 2);
+        break;
+
+      case 'book':
+        // Book
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(x - 6, y - 18, 16, 22);
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(x - 4, y - 16, 12, 18);
+        // Pages
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x - 2, y - 14, 8, 14);
+        // Text lines
+        ctx.fillStyle = '#333';
+        ctx.fillRect(x, y - 12, 4, 1);
+        ctx.fillRect(x, y - 9, 5, 1);
+        ctx.fillRect(x, y - 6, 3, 1);
+        break;
+
+      case 'poolcue':
+        // Pool cue
+        ctx.strokeStyle = '#8b4513';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y + 10);
+        ctx.lineTo(x + 30, y - 40);
+        ctx.stroke();
+        // Tip
+        ctx.strokeStyle = '#4ecdc4';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x + 28, y - 38);
+        ctx.lineTo(x + 32, y - 42);
+        ctx.stroke();
+        break;
+
+      case 'controller':
+        // Game controller
+        ctx.fillStyle = '#2d2d44';
+        ctx.beginPath();
+        ctx.roundRect(x - 12, y - 10, 28, 16, 4);
+        ctx.fill();
+        // D-pad
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(x - 8, y - 6, 3, 8);
+        ctx.fillRect(x - 10, y - 4, 8, 3);
+        // Buttons
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(x + 8, y - 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4ecdc4';
+        ctx.beginPath();
+        ctx.arc(x + 12, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        break;
     }
   }
 
@@ -593,6 +827,114 @@ export class AgentRenderer {
         ctx.arc(x, y + 35, 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+        break;
+
+      case 'tie':
+        // Business tie
+        ctx.fillStyle = '#3498db';
+        // Knot
+        ctx.beginPath();
+        ctx.moveTo(x - 6, y + 18);
+        ctx.lineTo(x + 6, y + 18);
+        ctx.lineTo(x + 4, y + 24);
+        ctx.lineTo(x - 4, y + 24);
+        ctx.closePath();
+        ctx.fill();
+        // Tie body
+        ctx.beginPath();
+        ctx.moveTo(x - 5, y + 24);
+        ctx.lineTo(x + 5, y + 24);
+        ctx.lineTo(x + 8, y + 45);
+        ctx.lineTo(x, y + 50);
+        ctx.lineTo(x - 8, y + 45);
+        ctx.closePath();
+        ctx.fill();
+        // Stripe
+        ctx.fillStyle = '#2980b9';
+        ctx.fillRect(x - 2, y + 28, 4, 18);
+        break;
+
+      case 'medal':
+        // Winner medal
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y + 15);
+        ctx.lineTo(x, y + 25);
+        ctx.lineTo(x + 8, y + 15);
+        ctx.stroke();
+        // Medal
+        ctx.fillStyle = '#ffd700';
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(x, y + 35, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // Star on medal
+        ctx.fillStyle = '#f39c12';
+        ctx.font = '10px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', x, y + 39);
+        ctx.textAlign = 'left';
+        break;
+
+      case 'apron':
+        // Apron
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y + 15);
+        ctx.lineTo(x + 18, y + 15);
+        ctx.lineTo(x + 22, y + 45);
+        ctx.lineTo(x - 22, y + 45);
+        ctx.closePath();
+        ctx.fill();
+        // Apron strings
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y + 15);
+        ctx.lineTo(x - 25, y + 5);
+        ctx.moveTo(x + 18, y + 15);
+        ctx.lineTo(x + 25, y + 5);
+        ctx.stroke();
+        // Pocket
+        ctx.strokeStyle = '#ddd';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - 8, y + 28, 16, 12);
+        break;
+
+      case 'bikini':
+        // Bikini top
+        ctx.fillStyle = '#ff6b9d';
+        // Left cup
+        ctx.beginPath();
+        ctx.arc(x - 10, y + 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // Right cup
+        ctx.beginPath();
+        ctx.arc(x + 10, y + 15, 8, 0, Math.PI * 2);
+        ctx.fill();
+        // String between
+        ctx.strokeStyle = '#ff6b9d';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 3, y + 15);
+        ctx.lineTo(x + 3, y + 15);
+        ctx.stroke();
+        // Neck string
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y + 8);
+        ctx.lineTo(x, y - 5);
+        ctx.lineTo(x + 8, y + 8);
+        ctx.stroke();
+        // Back strings
+        ctx.beginPath();
+        ctx.moveTo(x - 18, y + 15);
+        ctx.lineTo(x - 25, y + 10);
+        ctx.moveTo(x + 18, y + 15);
+        ctx.lineTo(x + 25, y + 10);
+        ctx.stroke();
         break;
     }
   }

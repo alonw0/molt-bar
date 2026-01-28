@@ -24,6 +24,7 @@ import { AgentRenderer } from './agents.js';
 import { Bartender } from './bartender.js';
 import { Tank, TankAgentRenderer } from './tank.js';
 import { getAgents, getStats } from './api.js';
+import { sounds } from './sounds.js';
 
 // Easter egg: tank mode (access via /tank.html or ?tank)
 const TANK_MODE = window.location.pathname.includes('tank') || window.location.search.includes('tank');
@@ -59,6 +60,8 @@ class ClawdBarApp {
 
     this.agents = new Map();
     this.agentsArray = []; // Reusable array to avoid creating new arrays every frame
+    this.previousAgentNames = new Set(); // Track agents for enter/leave detection
+    this.isFirstLoad = true; // Don't play sounds on initial load
 
     this.connectionStatus = document.getElementById('connectionStatus');
     this.agentCount = document.getElementById('agentCount');
@@ -72,6 +75,18 @@ class ClawdBarApp {
     this.musicPlaying = false;
 
     this.setupMusicControls();
+    this.setupSounds();
+  }
+
+  setupSounds() {
+    // Initialize sounds on first user interaction (required by browsers)
+    const initSounds = () => {
+      sounds.init();
+      document.removeEventListener('click', initSounds);
+      document.removeEventListener('keydown', initSounds);
+    };
+    document.addEventListener('click', initSounds);
+    document.addEventListener('keydown', initSounds);
   }
 
   setupMusicControls() {
@@ -85,7 +100,9 @@ class ClawdBarApp {
 
     if (volumeSlider) {
       volumeSlider.addEventListener('input', (e) => {
-        this.audio.volume = e.target.value / 100;
+        const vol = e.target.value / 100;
+        this.audio.volume = vol;
+        sounds.setVolume(vol);
       });
     }
 
@@ -198,6 +215,28 @@ class ClawdBarApp {
   async loadAgents() {
     try {
       const agents = await getAgents();
+      const currentNames = new Set(agents.map(a => a.name));
+
+      // Detect enter/leave (skip on first load)
+      if (!this.isFirstLoad) {
+        // Check for new agents
+        for (const name of currentNames) {
+          if (!this.previousAgentNames.has(name)) {
+            sounds.doorbell();
+            break; // Only one sound even if multiple enter
+          }
+        }
+        // Check for agents who left
+        for (const name of this.previousAgentNames) {
+          if (!currentNames.has(name)) {
+            sounds.doorClose();
+            break; // Only one sound even if multiple leave
+          }
+        }
+      }
+      this.isFirstLoad = false;
+      this.previousAgentNames = currentNames;
+
       this.agents.clear();
       for (const agent of agents) {
         this.agents.set(agent.name, agent);

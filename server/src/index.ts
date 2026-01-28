@@ -106,10 +106,10 @@ try {
 
 // Available accessories
 export const ACCESSORIES = {
-  hat: ["none", "tophat", "cowboy", "party", "beanie", "crown", "chef", "headphones"],
-  eyewear: ["none", "sunglasses", "nerd", "monocle", "eyepatch", "vr"],
-  held: ["none", "drink", "coffee", "martini", "phone", "sign"],
-  body: ["none", "bowtie", "scarf", "cape", "chain"],
+  hat: ["none", "tophat", "cowboy", "party", "beanie", "crown", "chef", "headphones", "wizard", "pirate", "santa", "hardhat", "cap"],
+  eyewear: ["none", "sunglasses", "nerd", "monocle", "eyepatch", "vr", "3d", "heart", "thug"],
+  held: ["none", "drink", "coffee", "martini", "phone", "sign", "laptop", "book", "poolcue", "controller"],
+  body: ["none", "bowtie", "scarf", "cape", "chain", "tie", "medal", "apron", "bikini"],
 };
 
 // SSE clients
