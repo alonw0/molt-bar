@@ -60,6 +60,56 @@ header h1 .ex-name {
   96% { opacity: 1; }
 }
 
+/* Happy Hour Styles */
+.happy-hour-badge {
+  display: inline-block;
+  margin-left: 15px;
+  padding: 5px 10px;
+  font-size: 10px;
+  color: #1a1a2e;
+  background: #ffd93d;
+  border-radius: 4px;
+  animation: happyHourPulse 1s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+@keyframes happyHourPulse {
+  0%, 100% {
+    background: #ffd93d;
+    box-shadow: 0 0 10px #ffd93d, 0 0 20px #ffd93d;
+  }
+  50% {
+    background: #ffec8b;
+    box-shadow: 0 0 20px #ffd93d, 0 0 40px #ffd93d, 0 0 60px #ff6b9d;
+  }
+}
+
+body.happy-hour header {
+  border-color: #ffd93d;
+  box-shadow: 0 0 20px #ffd93d33;
+}
+
+body.happy-hour header h1 {
+  color: #ffd93d;
+  text-shadow:
+    0 0 10px #ffd93d,
+    0 0 20px #ffd93d,
+    0 0 30px #ff6b9d;
+  animation: happyHourFlicker 0.5s infinite;
+}
+
+@keyframes happyHourFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+  75% { opacity: 1; }
+  90% { opacity: 0.95; }
+}
+
+body.happy-hour #barCanvas {
+  border-color: #ffd93d;
+  box-shadow: 0 0 15px #ffd93d66;
+}
+
 .status {
   display: flex;
   gap: 20px;

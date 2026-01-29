@@ -9,10 +9,10 @@ export const POSITIONS = {
   'counter-4': { x: 440, y: 280 },
   'counter-5': { x: 520, y: 280 },
   'counter-6': { x: 600, y: 280 },
-  'booth-1': { x: 100, y: 150 },
-  'booth-2': { x: 200, y: 150 },
-  'booth-3': { x: 650, y: 150 },
-  'booth-4': { x: 700, y: 250 },
+  'booth-1': { x: 50, y: 150 },
+  'booth-2': { x: 120, y: 150 },
+  'booth-3': { x: 730, y: 150 },
+  'booth-4': { x: 730, y: 250 },
   'jukebox': { x: 640, y: 510 },
   'pool-table': { x: 400, y: 450 },
   'arcade': { x: 510, y: 550 },
@@ -26,6 +26,7 @@ export class Bar {
     this.height = canvas.height;
     this.frame = 0;
     this.musicPlaying = false;
+    this.happyHour = false;
 
     // Pre-generate bottle colors so they don't flicker
     this.bottleColors = [];
@@ -47,6 +48,21 @@ export class Bar {
       });
     }
 
+    // Happy hour confetti
+    this.confetti = [];
+    for (let i = 0; i < 50; i++) {
+      this.confetti.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        size: Math.random() * 4 + 2,
+        speedY: Math.random() * 1 + 0.5,
+        speedX: (Math.random() - 0.5) * 0.5,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        color: ['#ffd93d', '#ff6b9d', '#4ecdc4', '#6bcb77', '#ff6b6b'][Math.floor(Math.random() * 5)],
+      });
+    }
+
     // Pre-create gradients to avoid memory leak (creating gradients every frame leaks memory)
     this.poolTableGradient = this.ctx.createRadialGradient(400, 350, 0, 400, 450, 150);
     this.poolTableGradient.addColorStop(0, 'rgba(255, 248, 220, 0.15)');
@@ -62,6 +78,10 @@ export class Bar {
     this.musicPlaying = playing;
   }
 
+  setHappyHour(active) {
+    this.happyHour = active;
+  }
+
   update() {
     this.frame++;
 
@@ -75,6 +95,23 @@ export class Bar {
       if (p.x > this.width) p.x = 0;
       if (p.y < 0) p.y = this.height;
       if (p.y > this.height) p.y = 0;
+    }
+
+    // Update confetti during happy hour
+    if (this.happyHour) {
+      for (const c of this.confetti) {
+        c.y += c.speedY;
+        c.x += c.speedX;
+        c.rotation += c.rotationSpeed;
+
+        // Reset when off screen
+        if (c.y > this.height) {
+          c.y = -10;
+          c.x = Math.random() * this.width;
+        }
+        if (c.x < 0) c.x = this.width;
+        if (c.x > this.width) c.x = 0;
+      }
     }
   }
 
@@ -124,13 +161,16 @@ export class Bar {
     // Bottles on shelves with occasional glint
     this.drawBottles(ctx, 160, 130, 480);
 
+    // Premium whisky bottle on display (left end of shelf)
+    this.drawWhiskyBottle(ctx, 155, 155);
+
     // Booths on left
-    this.drawBooth(ctx, 50, 120, false);
-    this.drawBooth(ctx, 150, 120, false);
+    this.drawBooth(ctx, 10, 120, false);
+    this.drawBooth(ctx, 80, 120, false);
 
     // Booths on right
-    this.drawBooth(ctx, 620, 120, true);
-    this.drawBooth(ctx, 670, 220, true);
+    this.drawBooth(ctx, 700, 120, true);
+    this.drawBooth(ctx, 700, 220, true);
   }
 
   // Draw counter and everything in front of the bartender
@@ -146,6 +186,11 @@ export class Bar {
     // Counter top shine
     ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.fillRect(150, 232, 500, 3);
+
+    // Happy hour shots on the counter
+    if (this.happyHour) {
+      this.drawHappyHourShots(ctx);
+    }
 
     // Pool table light cone
     this.drawPoolTableLight(ctx, 400, 350);
@@ -172,6 +217,11 @@ export class Bar {
 
     // Ambient light rays from windows/door
     this.drawLightRays(ctx);
+
+    // Happy hour confetti
+    if (this.happyHour) {
+      this.drawConfetti(ctx);
+    }
   }
 
   drawNeonSign(ctx, x, y) {
@@ -491,5 +541,96 @@ export class Bar {
     // Subtle ambient light from the neon sign (use pre-created gradient to avoid memory leak)
     ctx.fillStyle = this.neonGlowGradient;
     ctx.fillRect(200, 0, 400, 200);
+  }
+
+  drawWhiskyBottle(ctx, x, y) {
+    // Tall premium bottle with golden liquid
+    // Bottle body (dark glass)
+    ctx.fillStyle = '#1a0f05';
+    ctx.fillRect(x, y, 12, 30);
+
+    // Whisky liquid inside (amber glow)
+    ctx.fillStyle = '#b8860b';
+    ctx.fillRect(x + 2, y + 8, 8, 20);
+
+    // Liquid shimmer
+    const shimmer = 0.3 + Math.sin(this.frame * 0.03) * 0.15;
+    ctx.fillStyle = `rgba(255, 215, 0, ${shimmer})`;
+    ctx.fillRect(x + 3, y + 10, 3, 16);
+
+    // Bottle neck
+    ctx.fillStyle = '#1a0f05';
+    ctx.fillRect(x + 3, y - 8, 6, 10);
+
+    // Cork / cap (gold)
+    ctx.fillStyle = '#daa520';
+    ctx.fillRect(x + 3, y - 11, 6, 4);
+
+    // Label (cream colored)
+    ctx.fillStyle = '#faebd7';
+    ctx.fillRect(x + 1, y + 12, 10, 10);
+
+    // Label text (tiny lines)
+    ctx.fillStyle = '#4a2800';
+    ctx.fillRect(x + 3, y + 14, 6, 1);
+    ctx.fillRect(x + 2, y + 16, 8, 1);
+    ctx.fillRect(x + 4, y + 18, 4, 1);
+
+    // Golden glow around bottle
+    ctx.shadowColor = '#daa520';
+    ctx.shadowBlur = 8 + Math.sin(this.frame * 0.05) * 3;
+    ctx.fillStyle = 'rgba(218, 165, 32, 0.08)';
+    ctx.fillRect(x - 4, y - 12, 20, 46);
+    ctx.shadowBlur = 0;
+  }
+
+  drawConfetti(ctx) {
+    for (const c of this.confetti) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate((c.rotation * Math.PI) / 180);
+      ctx.fillStyle = c.color;
+      // Draw small rectangles as confetti pieces
+      ctx.fillRect(-c.size / 2, -c.size / 4, c.size, c.size / 2);
+      ctx.restore();
+    }
+  }
+
+  drawHappyHourShots(ctx) {
+    const shotColors = ['#ff6b6b', '#ffd93d', '#4ecdc4', '#ff6b9d', '#6bcb77', '#aa96da'];
+    const shotPositions = [170, 230, 350, 410, 470, 580];
+
+    for (let i = 0; i < shotPositions.length; i++) {
+      const x = shotPositions[i];
+      const y = 222; // On counter top
+      const color = shotColors[i % shotColors.length];
+
+      // Shot glass (small trapezoid shape)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.beginPath();
+      ctx.moveTo(x - 4, y);
+      ctx.lineTo(x + 4, y);
+      ctx.lineTo(x + 3, y + 10);
+      ctx.lineTo(x - 3, y + 10);
+      ctx.closePath();
+      ctx.fill();
+
+      // Liquid inside
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      ctx.moveTo(x - 3, y + 2);
+      ctx.lineTo(x + 3, y + 2);
+      ctx.lineTo(x + 2.5, y + 9);
+      ctx.lineTo(x - 2.5, y + 9);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Glass highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillRect(x - 3, y + 1, 1, 6);
+    }
   }
 }

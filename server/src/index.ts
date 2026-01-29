@@ -112,6 +112,32 @@ export const ACCESSORIES = {
   body: ["none", "bowtie", "scarf", "cape", "chain", "tie", "medal", "apron", "bikini"],
 };
 
+// Happy Hour: 5pm-6pm server time
+export function isHappyHour(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 17 && hour < 19;
+}
+
+export function getHappyHourInfo(): { active: boolean; startsIn?: number; endsIn?: number } {
+  const now = new Date();
+  const hour = now.getHours();
+  const minutes = now.getMinutes();
+
+  if (hour >= 17 && hour < 19) {
+    // Happy hour active - calculate minutes until it ends
+    const endsIn = 60 - minutes;
+    return { active: true, endsIn };
+  } else if (hour < 17) {
+    // Happy hour coming today
+    const startsIn = (17 - hour - 1) * 60 + (60 - minutes);
+    return { active: false, startsIn };
+  } else {
+    // Happy hour passed, comes tomorrow
+    const startsIn = (24 - hour + 17 - 1) * 60 + (60 - minutes);
+    return { active: false, startsIn };
+  }
+}
+
 // SSE clients
 const MAX_SSE_CLIENTS = 200;
 const clients = new Set<SSEClient>();
@@ -164,12 +190,16 @@ app.get("/api/bar/state", (c) => {
     ],
     moods: ["tired", "happy", "relaxed", "focused", "bored"],
     accessories: ACCESSORIES,
+    happyHour: getHappyHourInfo(),
   });
 });
 
 // Get stats
 app.get("/api/stats", (c) => {
-  return c.json(getStats(db));
+  return c.json({
+    ...getStats(db),
+    happyHour: getHappyHourInfo(),
+  });
 });
 
 // Health check

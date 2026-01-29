@@ -62,6 +62,7 @@ class ClawdBarApp {
     this.agentsArray = []; // Reusable array to avoid creating new arrays every frame
     this.previousAgentNames = new Set(); // Track agents for enter/leave detection
     this.isFirstLoad = true; // Don't play sounds on initial load
+    this.happyHour = false; // Happy hour state
 
     this.connectionStatus = document.getElementById('connectionStatus');
     this.agentCount = document.getElementById('agentCount');
@@ -201,8 +202,50 @@ class ClawdBarApp {
       if (this.totalVisits) {
         this.totalVisits.textContent = stats.total_visits.toLocaleString();
       }
+
+      // Handle happy hour
+      if (stats.happyHour) {
+        const wasHappyHour = this.happyHour;
+        this.happyHour = stats.happyHour.active;
+
+        // Notify scene of happy hour state
+        if (this.scene.setHappyHour) {
+          this.scene.setHappyHour(this.happyHour);
+        }
+
+        // Update UI
+        this.updateHappyHourUI(stats.happyHour);
+
+        // Play sound when happy hour starts
+        if (this.happyHour && !wasHappyHour && !this.isFirstLoad) {
+          sounds.doorbell(); // Celebration sound
+        }
+      }
     } catch (error) {
       console.error('Failed to load stats:', error);
+    }
+  }
+
+  updateHappyHourUI(happyHourInfo) {
+    const header = document.querySelector('header h1');
+    if (!header) return;
+
+    const existingBadge = document.getElementById('happyHourBadge');
+
+    if (happyHourInfo.active) {
+      if (!existingBadge) {
+        const badge = document.createElement('span');
+        badge.id = 'happyHourBadge';
+        badge.className = 'happy-hour-badge';
+        badge.textContent = 'HAPPY HOUR!';
+        header.appendChild(badge);
+      }
+      document.body.classList.add('happy-hour');
+    } else {
+      if (existingBadge) {
+        existingBadge.remove();
+      }
+      document.body.classList.remove('happy-hour');
     }
   }
 
