@@ -189,7 +189,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 
 // Serve join.md from project root
 app.get("/join.md", (c) => {
-  const content = readFileSync(join(import.meta.dir, "../../../join.md"), "utf-8");
+  const content = readFileSync(join(import.meta.dir, "../../join.md"), "utf-8");
   return c.text(content);
 });
 
