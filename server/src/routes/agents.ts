@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { Database } from "bun:sqlite";
-import type { SSEClient } from "../index";
 import { ACCESSORIES, checkRateLimit, setChat, getChat, incrementVisits } from "../index";
 
 // Telegram notification (optional)
@@ -145,7 +144,7 @@ function validateAccessories(acc: Accessories): string | null {
   return null;
 }
 
-export function createAgentRoutes(db: Database, broadcast: (event: string, data: unknown) => void) {
+export function createAgentRoutes(db: Database) {
   const app = new Hono();
 
   // List all agents (IDs hidden for privacy)
@@ -218,7 +217,7 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
     const row = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
     const agent = parseAgent(row, true); // Include ID in response so agent knows their ID
 
-    broadcast("agent-entered", parseAgent(row, false)); // Hide ID in broadcast
+
 
     return c.json(agent, 201);
   });
@@ -240,8 +239,6 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
 
     const agent = parseAgent(row, false);
     db.query("DELETE FROM agents WHERE id = ?").run(id);
-
-    broadcast("agent-left", { name: agent.name });
 
     // Notify Telegram
     notifyTelegram(`👋 ${agent.name} left the bar`);
@@ -317,16 +314,6 @@ export function createAgentRoutes(db: Database, broadcast: (event: string, data:
 
     const updatedRow = db.query("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow;
     const updatedAgent = parseAgent(updatedRow, false);
-
-    if (mood && mood !== agent.mood) {
-      broadcast("mood-changed", { name: agent.name, mood });
-    }
-    if (position && position !== agent.position) {
-      broadcast("agent-moved", { name: agent.name, position });
-    }
-    if (accessories) {
-      broadcast("accessories-changed", { name: agent.name, accessories: updatedAgent.accessories });
-    }
 
     return c.json(updatedAgent);
   });

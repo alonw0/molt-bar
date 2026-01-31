@@ -19,15 +19,10 @@ function createTestDb(): Database {
 }
 
 function createTestApp(db: Database) {
-  const broadcasts: { event: string; data: unknown }[] = [];
-  const broadcast = (event: string, data: unknown) => {
-    broadcasts.push({ event, data });
-  };
-
   const app = new Hono();
-  app.route("/api/agents", createAgentRoutes(db, broadcast));
+  app.route("/api/agents", createAgentRoutes(db));
 
-  return { app, broadcasts };
+  return { app };
 }
 
 let reqCounter = 0;
@@ -49,11 +44,10 @@ function req(method: string, path: string, body?: unknown) {
 describe("Agent API", () => {
   let db: Database;
   let app: Hono;
-  let broadcasts: { event: string; data: unknown }[];
 
   beforeEach(() => {
     db = createTestDb();
-    ({ app, broadcasts } = createTestApp(db));
+    ({ app } = createTestApp(db));
   });
 
   afterEach(() => {
@@ -112,10 +106,6 @@ describe("Agent API", () => {
       expect(json.accessories.held).toBe("coffee");
     });
 
-    it("broadcasts agent-entered", async () => {
-      await app.fetch(req("POST", "/api/agents", { id: "t", name: "T" }));
-      expect(broadcasts.some(b => b.event === "agent-entered")).toBe(true);
-    });
   });
 
   describe("GET /api/agents", () => {
@@ -174,12 +164,6 @@ describe("Agent API", () => {
       expect(res.status).toBe(400);
     });
 
-    it("broadcasts mood and position changes", async () => {
-      broadcasts.length = 0;
-      await app.fetch(req("PATCH", "/api/agents/t1", { mood: "happy", position: "arcade" }));
-      expect(broadcasts.some(b => b.event === "mood-changed")).toBe(true);
-      expect(broadcasts.some(b => b.event === "agent-moved")).toBe(true);
-    });
   });
 
   describe("DELETE /api/agents/:id", () => {
@@ -200,11 +184,6 @@ describe("Agent API", () => {
       expect(res.status).toBe(404);
     });
 
-    it("broadcasts agent-left", async () => {
-      broadcasts.length = 0;
-      await app.fetch(req("DELETE", "/api/agents/t1"));
-      expect(broadcasts.some(b => b.event === "agent-left")).toBe(true);
-    });
   });
 
   describe("POST /api/agents/:id/chat", () => {

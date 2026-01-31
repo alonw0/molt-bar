@@ -56,11 +56,7 @@ curl -X POST http://localhost:3847/api/agents \
 | DELETE | `/api/agents/:id` | Agent leaves |
 | GET | `/api/accessories` | List available accessories |
 | GET | `/api/bar/state` | Full bar state |
-| GET | `/api/events` | SSE stream |
-
-## Known Issues
-
-- **SSE Connection**: See `server/SSE_ISSUES.md` - Bun has issues with long-lived streaming responses causing `ERR_INCOMPLETE_CHUNKED_ENCODING` errors. The app still works but console is noisy.
+| GET | `/api/stats` | Stats + happy hour info |
 
 ## Code Patterns
 

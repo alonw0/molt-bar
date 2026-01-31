@@ -133,6 +133,11 @@ export class AgentRenderer {
       this.drawEyewear(ctx, x, y + bobOffset, acc.eyewear);
     }
 
+    // Wig (under hat, over head)
+    if (acc.wig) {
+      this.drawWig(ctx, x, y + bobOffset, acc.wig);
+    }
+
     // Hat (on top)
     if (acc.hat) {
       this.drawHat(ctx, x, y + bobOffset, acc.hat, antennaWiggle);
@@ -957,6 +962,146 @@ export class AgentRenderer {
     ctx.quadraticCurveTo(x - 18, y + 10, x - 15, y - 10);
     ctx.closePath();
     ctx.fill();
+  }
+
+  drawWig(ctx, x, y, type) {
+    switch (type) {
+      case 'long': {
+        // Long flowing hair
+        ctx.fillStyle = '#8b4513';
+        // Top volume
+        ctx.beginPath();
+        ctx.arc(x, y - 20, 32, Math.PI, 0);
+        ctx.fill();
+        // Left side flowing down
+        ctx.beginPath();
+        ctx.moveTo(x - 32, y - 10);
+        ctx.quadraticCurveTo(x - 38, y + 20, x - 30, y + 40);
+        ctx.lineTo(x - 22, y + 40);
+        ctx.quadraticCurveTo(x - 28, y + 15, x - 24, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        // Right side flowing down
+        ctx.beginPath();
+        ctx.moveTo(x + 32, y - 10);
+        ctx.quadraticCurveTo(x + 38, y + 20, x + 30, y + 40);
+        ctx.lineTo(x + 22, y + 40);
+        ctx.quadraticCurveTo(x + 28, y + 15, x + 24, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        // Shine
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.beginPath();
+        ctx.arc(x - 8, y - 22, 10, Math.PI, 0);
+        ctx.fill();
+        break;
+      }
+      case 'bob': {
+        // Short bob cut
+        ctx.fillStyle = '#2c1810';
+        // Top volume
+        ctx.beginPath();
+        ctx.arc(x, y - 18, 33, Math.PI, 0);
+        ctx.fill();
+        // Sides curving inward
+        ctx.beginPath();
+        ctx.moveTo(x - 33, y - 8);
+        ctx.quadraticCurveTo(x - 36, y + 10, x - 26, y + 18);
+        ctx.lineTo(x - 20, y + 14);
+        ctx.quadraticCurveTo(x - 28, y + 5, x - 26, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + 33, y - 8);
+        ctx.quadraticCurveTo(x + 36, y + 10, x + 26, y + 18);
+        ctx.lineTo(x + 20, y + 14);
+        ctx.quadraticCurveTo(x + 28, y + 5, x + 26, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      }
+      case 'curly': {
+        // Curly/afro style
+        ctx.fillStyle = '#4a2800';
+        // Big curly volume
+        for (let angle = 0; angle < Math.PI * 2; angle += 0.5) {
+          const r = 34 + Math.sin(angle * 5) * 4;
+          const cx = x + Math.cos(angle) * r * 0.8;
+          const cy = (y - 12) + Math.sin(angle) * r * 0.7;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        break;
+      }
+      case 'ponytail': {
+        // Ponytail
+        ctx.fillStyle = '#d4a017';
+        // Top hair
+        ctx.beginPath();
+        ctx.arc(x, y - 20, 30, Math.PI, 0);
+        ctx.fill();
+        // Ponytail going back-right
+        ctx.beginPath();
+        ctx.moveTo(x + 15, y - 22);
+        ctx.quadraticCurveTo(x + 40, y - 15, x + 38, y + 10);
+        ctx.quadraticCurveTo(x + 35, y + 20, x + 30, y + 25);
+        ctx.lineTo(x + 24, y + 20);
+        ctx.quadraticCurveTo(x + 30, y + 10, x + 32, y - 5);
+        ctx.quadraticCurveTo(x + 32, y - 12, x + 15, y - 16);
+        ctx.closePath();
+        ctx.fill();
+        // Hair tie
+        ctx.fillStyle = '#ff6b9d';
+        ctx.beginPath();
+        ctx.arc(x + 30, y - 10, 4, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'pigtails': {
+        // Pigtails
+        ctx.fillStyle = '#ff6b6b';
+        // Top hair
+        ctx.beginPath();
+        ctx.arc(x, y - 20, 30, Math.PI, 0);
+        ctx.fill();
+        // Left pigtail
+        ctx.beginPath();
+        ctx.moveTo(x - 26, y - 10);
+        ctx.quadraticCurveTo(x - 38, y + 5, x - 34, y + 30);
+        ctx.lineTo(x - 26, y + 28);
+        ctx.quadraticCurveTo(x - 30, y + 5, x - 20, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        // Right pigtail
+        ctx.beginPath();
+        ctx.moveTo(x + 26, y - 10);
+        ctx.quadraticCurveTo(x + 38, y + 5, x + 34, y + 30);
+        ctx.lineTo(x + 26, y + 28);
+        ctx.quadraticCurveTo(x + 30, y + 5, x + 20, y - 5);
+        ctx.closePath();
+        ctx.fill();
+        // Hair ties
+        ctx.fillStyle = '#ffd93d';
+        ctx.beginPath();
+        ctx.arc(x - 30, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x + 30, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'mohawk': {
+        // Punk mohawk
+        ctx.fillStyle = '#ff6b9d';
+        for (let i = 0; i < 5; i++) {
+          const sx = x - 12 + i * 6;
+          const h = 18 + Math.sin(i * 1.2) * 5;
+          ctx.fillRect(sx, y - 28 - h, 5, h);
+        }
+        break;
+      }
+    }
   }
 
   drawEyes(ctx, x, y, mood) {

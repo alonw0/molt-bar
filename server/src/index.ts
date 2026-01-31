@@ -85,10 +85,6 @@ export function getStats(db: Database): { total_visits: number } {
   return { total_visits: row?.value || 0 };
 }
 
-export interface SSEClient {
-  send: (event: string, data: unknown) => void;
-}
-
 // Initialize database
 const db = new Database(join(import.meta.dir, "../data/bar.db"));
 
@@ -110,6 +106,7 @@ export const ACCESSORIES = {
   eyewear: ["none", "sunglasses", "nerd", "monocle", "eyepatch", "vr", "3d", "heart", "thug"],
   held: ["none", "drink", "coffee", "martini", "phone", "sign", "laptop", "book", "poolcue", "controller"],
   body: ["none", "bowtie", "scarf", "cape", "chain", "tie", "medal", "apron", "bikini"],
+  wig: ["none", "long", "bob", "curly", "ponytail", "pigtails", "mohawk"],
 };
 
 // Happy Hour: 5pm-6pm server time
@@ -138,21 +135,6 @@ export function getHappyHourInfo(): { active: boolean; startsIn?: number; endsIn
   }
 }
 
-// SSE clients
-const MAX_SSE_CLIENTS = 200;
-const clients = new Set<SSEClient>();
-
-// Broadcast to all connected clients
-function broadcast(event: string, data: unknown) {
-  for (const client of clients) {
-    try {
-      client.send(event, data);
-    } catch {
-      clients.delete(client);
-    }
-  }
-}
-
 // Create Hono app
 const app = new Hono();
 
@@ -160,7 +142,7 @@ const app = new Hono();
 app.use("/*", cors());
 
 // Mount routes
-app.route("/api/agents", createAgentRoutes(db, broadcast));
+app.route("/api/agents", createAgentRoutes(db));
 
 // Get available accessories
 app.get("/api/accessories", (c) => {
@@ -205,6 +187,12 @@ app.get("/api/stats", (c) => {
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
 
+// Serve join.md from project root
+app.get("/join.md", (c) => {
+  const content = readFileSync(join(import.meta.dir, "../../../join.md"), "utf-8");
+  return c.text(content);
+});
+
 // Serve website static files
 const websitePath = join(import.meta.dir, "../../website");
 app.use("/*", serveStatic({ root: websitePath }));
@@ -214,117 +202,7 @@ const PORT = 3847;
 console.log(`🍺 Clawd Bar server running on http://localhost:${PORT}`);
 console.log(`   Website: http://localhost:${PORT}/index.html`);
 
-// Handle SSE with async pull that keeps connection open
-function handleSSE(signal?: AbortSignal): Response {
-  // Check if pub is full
-  if (clients.size >= MAX_SSE_CLIENTS) {
-    return new Response(
-      JSON.stringify({ error: "The pub is full! Try again later." }),
-      {
-        status: 503,
-        headers: {
-          "Content-Type": "application/json",
-          "Retry-After": "60",
-        },
-      }
-    );
-  }
-
-  const encoder = new TextEncoder();
-  const pendingMessages: Uint8Array[] = [];
-  let resolveNext: ((done: boolean) => void) | null = null;
-  let client: SSEClient;
-  let heartbeatTimer: Timer;
-  let isClosed = false;
-
-  const write = (event: string, data: unknown) => {
-    if (isClosed) return;
-    const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-    pendingMessages.push(encoder.encode(msg));
-    resolveNext?.(false);
-  };
-
-  client = { send: write };
-  clients.add(client);
-
-  // Initial message
-  write("connected", { message: "Connected to Clawd Bar" });
-
-  // Heartbeat
-  heartbeatTimer = setInterval(() => write("heartbeat", { time: Date.now() }), 20000);
-
-  const cleanup = () => {
-    isClosed = true;
-    clearInterval(heartbeatTimer);
-    clients.delete(client);
-    resolveNext?.(true);
-  };
-
-  signal?.addEventListener("abort", cleanup);
-
-  const stream = new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      if (isClosed) {
-        controller.close();
-        return;
-      }
-
-      // If we have pending messages, send them
-      while (pendingMessages.length > 0) {
-        controller.enqueue(pendingMessages.shift()!);
-      }
-
-      // Wait for new message or close (max 30 seconds)
-      await new Promise<void>((resolve) => {
-        resolveNext = () => {
-          resolveNext = null;
-          resolve();
-        };
-        // Timeout after 30 seconds to allow pull to be called again
-        setTimeout(() => {
-          if (resolveNext) {
-            resolveNext = null;
-            resolve();
-          }
-        }, 30000);
-      });
-
-      // Send any messages that arrived while waiting
-      while (pendingMessages.length > 0) {
-        controller.enqueue(pendingMessages.shift()!);
-      }
-
-      if (isClosed) {
-        controller.close();
-      }
-    },
-    cancel() {
-      cleanup();
-    },
-  });
-
-  return new Response(stream, {
-    headers: new Headers([
-      ["Content-Type", "text/event-stream"],
-      ["Cache-Control", "no-cache"],
-      ["Connection", "keep-alive"],
-      ["Access-Control-Allow-Origin", "*"],
-      ["X-Accel-Buffering", "no"],
-    ]),
-  });
-}
-
 export default {
   port: PORT,
-  fetch(req: Request): Response | Promise<Response> {
-    const url = new URL(req.url);
-
-    // Handle SSE endpoint directly
-    if (url.pathname === "/api/events") {
-      return handleSSE(req.signal);
-    }
-
-    // Let Hono handle everything else
-    return app.fetch(req);
-  },
+  fetch: app.fetch,
 };

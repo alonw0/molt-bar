@@ -13,6 +13,4 @@ export async function getStats() {
   return response.json();
 }
 
-export function createEventSource() {
-  return new EventSource('/api/events');
-}
+

@@ -339,6 +339,106 @@ main {
   box-shadow: 0 0 5px #4ecdc4;
 }
 
+/* Install Banner */
+.install-banner {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(180deg, #2d2d44 0%, #1a1a2e 100%);
+  border: 4px solid #4ecdc4;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.2);
+}
+
+.install-banner h2 {
+  font-size: 14px;
+  color: #4ecdc4;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px #4ecdc4;
+}
+
+.install-banner p {
+  font-size: 9px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.install-banner p a {
+  color: #ffd93d;
+  text-decoration: none;
+}
+
+.install-banner p a:hover {
+  text-shadow: 0 0 10px #ffd93d;
+}
+
+.install-command {
+  display: inline-block;
+  padding: 12px 20px;
+  background: #16213e;
+  border: 3px solid #4a4a6a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.install-command:hover {
+  border-color: #4ecdc4;
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+}
+
+.install-command code {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #ffd93d;
+}
+
+.install-command .copy-hint {
+  display: block;
+  font-size: 7px;
+  color: #4a4a6a;
+  margin-top: 6px;
+}
+
+.install-command:hover .copy-hint {
+  color: #4ecdc4;
+}
+
+.install-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 15px;
+}
+
+.install-tab {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 8px 16px;
+  background: #16213e;
+  color: #888;
+  border: 3px solid #4a4a6a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.install-tab:hover {
+  color: #4ecdc4;
+  border-color: #4ecdc4;
+}
+
+.install-tab.active {
+  color: #4ecdc4;
+  border-color: #4ecdc4;
+  background: #1a2a4e;
+}
+
+.install-content.hidden {
+  display: none;
+}
+
+
 /* Footer */
 footer {
   grid-column: 1 / -1;
